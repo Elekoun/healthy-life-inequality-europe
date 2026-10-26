@@ -1,0 +1,597 @@
+---
+title: "INTRODUCTION TO PROGRAMMING FOR DATA ANALYSIS PROJECT"
+author: "EDENAKPO Owokoto Gildas & ELEKOUN Faïzath Morènikè"
+date: "2025-12-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+```{r, comment="", include=FALSE, warning=FALSE}
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(patchwork)
+library(texreg)
+library(knitr)
+```
+
+```{r, comment = "", include = FALSE, warning=FALSE}
+inequality_income <- read.csv("data/tespm151_page_linear.csv")
+
+healthy_life <- read.csv("data/hlth_hlye_page_linear.csv")
+
+#head(healthy_life)
+#head(inequality_income)
+```
+
+```{r, include = FALSE, warning=FALSE, comment = ""}
+names(healthy_life)
+names(inequality_income)
+```
+
+```{r, include = FALSE,warning=FALSE, comment = ""}
+new_healthy<- healthy_life %>%
+  select(TIME_PERIOD,geo, OBS_VALUE)
+
+new_inequality<- inequality_income %>%
+  select(TIME_PERIOD,geo, OBS_VALUE)
+
+head(new_inequality)
+head(new_healthy)
+
+```
+
+```{r , include = FALSE,warning=FALSE, comment = ""}
+names(new_inequality)
+names(new_healthy)
+```
+
+```{r, warning= FALSE, include = FALSE, comment = ""}
+new_healthy1<- rename(new_healthy,
+                      year = TIME_PERIOD,
+                      country = geo,
+                      healthy_life_years = OBS_VALUE)
+                    
+new_inequality1<- rename(new_inequality,
+                         year = TIME_PERIOD,
+                         country = geo,
+                         inequality_income_dist = OBS_VALUE)    
+
+head(new_healthy1)
+head(new_inequality1)
+```
+
+```{r, include = FALSE, warning= FALSE, comment = ""}
+df<-left_join(new_healthy1, new_inequality1, by = c("year", "country"))
+
+```
+
+# Description of the relationship of interest
+
+Our data come from Eurostat and cover the period from 2014 to 2023
+across European countries.
+
+## Variable X : Inequality of income distribution (S80/S20 ratio)
+
+The inequality of income distribution is expressed through the S80/S20
+income quintile share ratio, which compares the total income received by
+the 20% of the population with the highest income (the richest quintile)
+to that received by the 20% with the lowest income (the poorest
+quintile). This indicator is a ratio without units, meaning it is not
+expressed in percentages. It provides a clear measure of how unevenly
+income is distributed among individuals in a society. A lower ratio
+(close to 1) indicates a more equal income distribution, while a higher
+ratio reflects greater inequality, where the richest earn many times
+more than the poorest. For example, a ratio of 4 means that the top 20%
+of earners receive four times the income of the bottom 20%.
+
+### Variable Y : Healthy life years
+
+We know people are living longer. However, do we live longer and better
+or do we gain only years of life in bad health?
+
+The indicator of healthy life years (HLY) measures the number of
+remaining years that a person of specific age is expected to live
+without any severe or moderate health problems. The notion of health
+problem for Eurostat's HLY is reflecting a disability dimension and is
+based on a self-perceived question which aims to measure the extent of
+any limitations, for at least six months, because of a health problem
+that may have affected respondents as regards activities they usually do
+(the so-called GALI - Global Activity Limitation Instrument foreseen in
+the annual EU-SILC survey). The indicator is therefor also called
+disability-free life expectancy (DFLE). So, HLY is a composite indicator
+that combines mortality data with health status data.
+
+HLY also monitor health as a productive or economic factor. An increase
+in healthy life years is one of the main goals for European health
+policy. And it would not only improve the situation of individuals but
+also result in lower levels of public health care expenditure. If
+healthy life years are increasing more rapidly than life expectancy, it
+means that people are living more years in better health.
+
+## Interest of studying the relationship between Inequality of income distribution and Healthy life years
+
+Studying the relationship between income inequality and healthy life
+years is important because socioeconomic factors have a major influence
+on health outcomes. Higher income inequality can lead to disparities in
+access to healthcare, education, nutrition, and living conditions, which
+may reduce the number of years people live in good health. Understanding
+this relationship helps policymakers design more effective strategies to
+promote social equity and public health, ultimately improving overall
+well-being and reducing health inequalities within the population.
+Moreover, this type of analysis highlights the close links between
+economic conditions and well-being, and it aligns fully with the logic
+of sustainable development. It directly contributes to the United
+Nations Sustainable Development Goals (SDGs), particularly Goal 10
+(Reduced Inequalities) and Goal 3 (Good Health and Well-being).
+
+# Description of our data
+
+## Measure of X
+
+The variable X (inequality of income distribution) is measured by the
+S80/S20 income quintile share ratio. This indicator compares the total
+income received by the 20% of the population with the highest income to
+that received by the 20% with the lowest income. The ratio is a
+dimensionless number (not expressed in percentages). The data are
+typically collected and published by Eurostat, based on household income
+surveys conducted in each country.
+
+## Measure of Y
+
+The variable Y (healthy life years) is measured as the average number of
+years a person can expect to live in good health, free from serious
+illness or disability. It is based on two main components: life
+expectancy and self-perceived health status, often gathered through
+population health surveys. The indicator is expressed in years, and data
+are available from Eurostat.
+
+## The columns used to merge both datasets X and Y
+
+The two datasets are merged using the columns as both variables are
+measured annually and reported for each European country. These common
+identifiers allow for an accurate match between income inequality data
+and healthy life years data for the same country and year.
+
+## The unit of observation in the final dataset
+
+The unit of observation in the final dataset is a country-year pair.
+Each row represents a specific country in a specific year (for example,
+France 2019 or Germany 2021).
+
+## The number of observation in the final dataset
+
+The final dataset contains 330 observations, corresponding to the number
+of country-year combinations available after merging both datasets.
+
+# The goal of the project
+
+In summary, this project aims to study the relationship between income
+inequality and healthy life years across European countries over the
+period 2014 to 2023. The purpose is to better understand how economic
+disparities can influence health and well-being within societies.
+
+# Descriptive statistics
+
+## The distribution of the variable "inequality of income distribution"
+
+```{r , echo = FALSE, warning=FALSE, comment = ""}
+df <- df %>%
+  mutate(
+    country = as.factor(country),
+    year = as.numeric(year)
+  )
+```
+
+## Histogram and density plot of the variable "inequality of income distribution"
+
+```{r, echo = FALSE, warning=FALSE, comment = ""}
+
+ggplot(df, aes(x = inequality_income_dist)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 20, fill = "lightblue", color = "black",na.rm = TRUE) +
+  geom_density(color = "blue", linewidth = 1,na.rm = TRUE) +
+  labs(
+    title = "Distribution of Income Inequality",
+    x = "Inequality of income distribution",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+```
+
+The histogram shows a right-skewed distribution, with a main peak around
+the value 4, indicating that most observations correspond to a moderate
+level of income inequality. The frequency gradually decreases for higher
+values, revealing the presence of a few cases of very high inequality,
+but these are relatively rare. This pattern suggests that, across the
+countries studied, income distribution is fairly balanced for most,
+while a small number experience significant income disparities.
+
+## Distribution of the variable "Healthy life years"
+
+## Histogram and density plot of the variable "Healthy life years"
+
+```{r, echo = FALSE, warning=FALSE, comment = ""}
+ggplot(df, aes(x = healthy_life_years)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 20, fill = "lightblue", color = "black",na.rm = TRUE) +
+  geom_density(color = "blue", linewidth = 1,na.rm = TRUE) +
+  labs(
+    title = "Distribution of healthy life years",
+    x = "healthy life years",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+```
+
+The histogram of healthy life years displays a roughly symmetrical
+distribution, slightly skewed to the right, centered around 63 years.
+This indicates that the majority of individuals of countries have a
+moderate to high number of healthy life years, typically between 60 and
+65 years, with only a few cases enjoying notably longer healthy lives
+(up to 75 years). The moderate spread implies limited variation in
+health outcomes, suggesting a relatively homogeneous and overall
+favorable health situation.
+
+## Table of summary statistics
+
+```{r, comment= "", echo = FALSE, warning=FALSE}
+# Calcul du tableau de synthèse
+# Vérifie bien que df est un data frame
+# class(df)
+
+# ------------------------------
+# VARIABLES À ANALYSER
+# ------------------------------
+vars <- c("inequality_income_dist", "healthy_life_years")
+
+# ------------------------------
+# CALCUL DES STATISTIQUES
+# ------------------------------
+summary_table <- data.frame(
+  Variables = vars,
+  Mean = sapply(df[vars], function(x) mean(x, na.rm = TRUE)),
+  SD   = sapply(df[vars], function(x) sd(x, na.rm = TRUE)),
+  Min  = sapply(df[vars], function(x) min(x, na.rm = TRUE)),
+  Max  = sapply(df[vars], function(x) max(x, na.rm = TRUE))
+)
+
+# ------------------------------
+# AFFICHAGE COMPATIBLE PDF
+# ------------------------------
+kable(summary_table)
+
+```
+
+## Table of summary statistics per country
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+by_country <- df |>
+  group_by(country) |>
+  summarise(
+    mean_X = mean(inequality_income_dist, na.rm = TRUE),
+    sd_X   = sd(inequality_income_dist, na.rm = TRUE),
+    mean_Y = mean(healthy_life_years, na.rm = TRUE),
+    sd_Y   = sd(healthy_life_years, na.rm = TRUE),
+    obs    = n()
+  ) |>
+  arrange(desc(mean_X))
+
+# Affichage complet dans le PDF
+kable(by_country)
+
+```
+
+## Average evolution of inequality_income_dist and healthy_life_years over time
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Calculate yearly average of X
+df_yearly_X <- df %>%
+  group_by(year) %>%
+  summarise(mean_X = mean(inequality_income_dist, na.rm = TRUE))
+
+# Plot for X
+ggplot(df_yearly_X, aes(x = year, y = mean_X)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(color = "steelblue") +
+  labs(title = "Average evolution of inequality_income_dist",
+       x = "Year", y = "Mean inequality_income") +
+  theme_minimal()
+
+```
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Calculate yearly average of Y
+df_yearly_Y <- df %>%
+  group_by(year) %>%
+  summarise(mean_Y = mean(healthy_life_years, na.rm = TRUE))
+
+# Plot for Y
+ggplot(df_yearly_Y, aes(x = year, y = mean_Y)) +
+  geom_line(color = "darkgreen", linewidth = 1) +
+  geom_point(color = "darkgreen") +
+  labs(title = "Average evolution of healthy_life_years",
+       x = "Year", y = "Mean healthy_life") +
+  theme_minimal()
+```
+
+## The average evolution of inequality_income and healthy_years in Sweden and Greece.
+
+```{r, comment = "", echo = FALSE}
+# Filter and compute yearly averages for the two countries
+df_SG<- df %>%
+  filter(country %in% c("Sweden", "Greece"))%>%
+  group_by(country, year)%>%
+  summarise(
+    mean_x = mean(inequality_income_dist, na.rm = TRUE),
+    mean_y = mean (healthy_life_years, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Average evolution of income inequality in Sweden vs Greece
+
+ggplot(df_SG, aes(x = year, y = mean_x, color = country)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  labs(title = "Average evolution of Income Inequality in Sweden and Greece",
+       x = "Year", y = " Mean inequality_income_dist",
+       color = "Country") +
+  theme_minimal()
+
+
+```
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Average evolution of healthy life years in Sweden and Greece
+
+ggplot(df_SG, aes(x = year, y = mean_y, color = country)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  labs(title = "Average evolution of healthy life years in Sweden and Greece",
+       x = "Year", y = " Average of healthy life years",
+       color = "Country") +
+  theme_minimal()
+```
+
+Sweden and Greece make an interesting comparison because they represent
+two contrasting socio-economic models: Sweden is characterized by low
+inequality income distribution and strong welfare redistribution, while
+Greece has historically experienced higher inequality, notably
+intensified after the 2008 financial crisis. In terms of wealth, Sweden
+generally maintains high and stable accumulation, whereas Greece has
+faced more volatility and losses during periods of economic instability.
+Comparing these two countries therefore provides valuable insight into
+how different economic structures and political strategies; strong
+welfare protections versus financial vulnerability; shape the evolution
+of inequality (X) and healthy life years (Y) over time.
+
+## Ranking countries by the change in X and Y between the first and last year
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# 1. Compute the change of X and Y between first and last year for each country
+df_change <- df %>%
+  group_by(country) %>%
+  summarise(
+    X_change = mean(inequality_income_dist[year == max(year)], na.rm = TRUE) -
+               mean(inequality_income_dist[year == min(year)], na.rm = TRUE),
+    Y_change = mean(healthy_life_years[year == max(year)], na.rm = TRUE) -
+               mean(healthy_life_years[year == min(year)], na.rm = TRUE),
+    .groups = "drop" # avoids the summarise grouping warning
+  ) %>%
+  # Remove countries with NA values
+  filter(!is.na(X_change) & !is.na(Y_change))
+
+# 2. Barplot for X change
+p_X_change <- ggplot(df_change, aes(x = reorder(country, -X_change), y = X_change)) +
+  geom_col(fill = "steelblue", width = 0.7) +
+  labs(title = "Change in inequality_income ",
+       x = "Country", y = "Change in X") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(margin = margin(r = 10)),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  coord_flip()
+
+# 3. Barplot for Y change
+p_Y_change <- ggplot(df_change, aes(x = reorder(country, -Y_change), y = Y_change)) +
+  geom_col(fill = "darkgreen", width = 0.7) +
+  labs(title = "Change in healthy_years by country",
+       x = "Country", y = "Change in Y") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(margin = margin(r = 10)),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  coord_flip()
+
+# 4. Display the two barplots side by side
+p_X_change + p_Y_change
+```
+
+# Relationship between Inequality of income distribution and healthy life years
+
+## Scatter plot for the relationship between Y and X with linear fit
+
+In order to improve the comparability of the variables, we standardized
+inequality_income_dist and healthy_life_years. Since these two
+indicators are not expressed using the same unit of measurement, it was
+initially difficult to clearly observe the relationship between them.
+Standardization places both variables on the same scale, with a mean of
+0 and a standard deviation of 1, which facilitates graphical
+visualization and the interpretation of regression coefficients. From
+this point onward, all analyses in this section are performed using the
+standardized values of X and Y, allowing for a clearer and more
+consistent examination of their relationship and the relative magnitude
+of their variations.
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Let's standardized our variables 
+df$inequality_income_std<- as.numeric(scale(df$inequality_income_dist, center = TRUE, scale = TRUE))
+df$healthy_life_std<- as.numeric(scale(df$healthy_life_years, center = TRUE, scale = TRUE))
+
+```
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+df_noNA<- df %>%
+  filter(!is.na(inequality_income_std) & !is.na(healthy_life_std))
+  
+ggplot(df_noNA, aes(x = inequality_income_std, y = healthy_life_std)) +
+  geom_point(alpha = 0.6, color = "steelblue") +           # scatter points
+  geom_smooth(method = "lm", formula = y~x, se = TRUE, color = "red") +   # linear regression line
+  labs(title = "Scatter plot between inequality income of distribution  and healthy life years with linear fit",
+       x = "inequality_income_std",
+       y = "healthy_life_std") +
+  theme_minimal()
+```
+
+## Scatter plot for the relationship between Y and X with a quadratic fit
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+ggplot(df_noNA, aes(x = inequality_income_std, y = healthy_life_std)) +
+  geom_point(alpha = 0.6, color = "steelblue") +          
+  geom_smooth(method = "lm", formula = y~poly(x,2), se = TRUE, color = "red") +  
+  labs(title = "Scatter plot between inequality income of distribution  and healthy life years with quadratic fit",
+       x = "inequality_income_std",
+       y = "healthy_life_std") +
+  theme_minimal()
+```
+
+## Compute within-country year-to-year changes
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+df_noNA_change<- df_noNA %>%
+  arrange(country, year) %>%
+  group_by(country) %>%
+  mutate(
+    dinequality_income_std = inequality_income_std - lag(inequality_income_std),
+    dhealthy_life_std = healthy_life_std - lag(healthy_life_std)
+  ) %>%
+  ungroup() %>%
+  filter (!is.na(dinequality_income_std) & !is.na(dhealthy_life_std))
+```
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Quick check
+head(df_noNA_change, 5)
+```
+
+## Scatter plot between dinequality_income_std and dhealthy_life_std with linear fit
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+ggplot(df_noNA_change, aes(x = dinequality_income_std, y = dhealthy_life_std))+
+  geom_point(alpha = 0.6, color = "purple")+
+  geom_smooth(method = "lm", formula = y~x, se = TRUE, color = "black") +
+  labs(title = " Scatter plot between d(inequality_income_std) and d(healthy_life_std)",
+     x = " change in inequality_income (std)",
+     y = "change in healthy_years (std)"
+     )+
+  theme_minimal()
+  
+```
+
+## Regress Y on X
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+model_1 <- lm(healthy_life_std ~ inequality_income_std, data = df)
+```
+
+### Estimation table of model_1
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Table of estimation_results
+kable(summary(model_1)$coefficients ,caption= "Effect of inequality_income on healthy_life")
+```
+
+## Regress Y on X controlling for country fixed effects.
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+model_2<- lm(healthy_life_std ~ inequality_income_std + factor(country) -1, 
+           data = df)
+```
+
+### Estimation table of model_1 vs model_2
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+# Table of estimation_result
+screenreg(list(model_1, model_2), stars = c(0.1, 0.05, 0.01))
+```
+
+## Regress Y on X controlling for year and country fixed effects.
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+model_3<- lm(healthy_life_std ~ inequality_income_std + factor(year)
+                          + factor(country) -1, data = df)  
+```
+
+### Estimation table of model_1 vs model_2 vs model_3
+
+```{r, comment = "", echo = FALSE, warning=FALSE}
+screenreg(list(model_1, model_2, model_3), stars = c(0.1, 0.05, 0.01))
+```
+
+## Interpretation
+
+The estimated coefficients show a consistently negative relationship
+between income inequality and healthy life expectancy. In the simple
+model, the coefficient is β = -0.11, indicating that an increase of one
+standard deviation in inequality is associated with a 0.11
+standard-deviation decrease in years of healthy life. When country fixed
+effects are added, the effect becomes stronger (β = -0.19) and more
+statistically significant. This means that when comparing a country to
+itself over time thereby controlling for structural differences across
+countries such as development level, healthcare systems, or cultural
+factors an increase in inequality is associated with a more pronounced
+loss of healthy life years. In the model that also includes year fixed
+effects, the coefficient remains negative (β = -0.16) and significant,
+confirming the robustness of the relationship even after accounting for
+time specific shocks, such as the pandemic or economic fluctuations. The
+coefficients associated with the country and year fixed effects
+reinforce this interpretation. The country fixed effects show that some
+countries have, on average, higher healthy life expectancy (positive
+coefficients, for example, Sweden, Iceland, Malta), while others remain
+consistently below the baseline (negative coefficients, for example,
+Bulgaria, Latvia, Slovakia). Finally, the year fixed effects are mostly
+negative, indicating an overall decline in healthy life years during the
+study period, regardless of inequality levels. Taken together, these
+results show not only that income inequality has a direct, statistically
+significant, and relatively stable effect on health, but also that this
+effect persists even after controlling for major structural and temporal
+factors.
+
+## Policy implications for economic decision-making
+
+The estimates show that income inequality has a negative, significant,
+and robust effect on healthy life expectancy. These results suggest that
+public policies specifically targeting the reduction of income
+disparities could serve as a key lever for improving population health.
+First, more progressive redistributive policies (tax reforms, increased
+progressiveness of income taxes, tax credits for low income households)
+would help reduce the inequality measured in the models and, according
+to the estimated coefficients, mitigate part of the decline in healthy
+life years. Second, strengthening social transfers particularly through
+housing benefits, targeted support for vulnerable families, or
+guaranteed minimum income schemes would directly reduce economic
+insecurity, a factor often associated with limited access to prevention
+and healthcare.
+
+At the same time, the country fixed effects show that structural health
+differences between states are substantial. This supports the need for
+policies aimed at reducing inequalities in access to health services,
+notably through greater investment in primary care, prevention, mental
+health, and hospital infrastructure in regions with weaker health
+outcomes. Similarly, since the year fixed effects reveal a general
+downward trend in health over recent years, it is crucial to implement
+broad strategies that strengthen health resilience: post pandemic public
+health policies, programs to combat chronic diseases, measures to reduce
+work related and social stress, and initiatives that improve
+environmental quality and living conditions. Finally, since an increase
+of one standard deviation in inequality reduces health by about 0.16
+standard deviations in the most comprehensive models, a broad economic
+policy strategy aimed at reducing inequalities combining taxation,
+employment, education, and health could generate significant and lasting
+improvements in healthy life expectancy.
